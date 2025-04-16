@@ -1,4 +1,4 @@
-package com.example.th1.screen.appScreen
+package com.example.th2.screen.appScreen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,9 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.th1.Task
-import com.example.th1.TaskViewModel
-import com.example.th1.screen.SmartTasksTopBar
+import com.example.th2.Task
+import com.example.th2.TaskViewModel
+import com.example.th2.screen.SmartTasksTopBar
 
 @Composable
 fun AppScreenOne(
@@ -49,10 +49,7 @@ fun AppScreenOne(
     // Sử dụng uiState từ TaskViewModel
     val uiState by taskViewModel.uiState.collectAsState()
     
-    // Gọi API để lấy danh sách task khi màn hình được tạo
-    LaunchedEffect(key1 = Unit) {
-        taskViewModel.fetchTasks()
-    }
+
     
     Box(
         modifier = Modifier
@@ -91,7 +88,8 @@ fun AppScreenOne(
                 }
             }
         }
-
+        
+        // BottomBar sẽ được xử lý riêng trong MainActivity
         // Để dành khoảng trống cho BottomBar
         Spacer(
             modifier = Modifier

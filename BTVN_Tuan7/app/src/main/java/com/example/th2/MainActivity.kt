@@ -1,18 +1,21 @@
-package com.example.th1
+package com.example.th2
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -20,14 +23,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.th1.data.api.RetrofitClient
-import com.example.th1.data.repository.TaskRepository
-import com.example.th1.ui.screens.BottomBar
-import com.example.th1.ui.screens.appScreen.AddNewTaskScreen
-import com.example.th1.ui.screens.appScreen.AppScreenOne
-import com.example.th1.ui.screens.appScreen.DetailScreen
-import com.example.th1.viewmodel.TaskViewModel
-import com.example.th1.viewmodel.TaskViewModelFactory
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.th2.screen.BottomBar
+import com.example.th2.screen.appScreen.AddNewTaskScreen
+import com.example.th2.screen.appScreen.AppScreenOne
+import com.example.th2.screen.appScreen.DetailScreen
+import com.example.th2.screen.startScreen.OnboardingScreen
+
+
+
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,10 +54,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TaskApp() {
     val navController = rememberNavController()
-    val repository = remember { TaskRepository(RetrofitClient.taskApiService) }
-    val taskViewModel: TaskViewModel = viewModel(
-        factory = TaskViewModelFactory(repository)
-    )
+    val taskViewModel: TaskViewModel = viewModel()
     
     // Kiểm tra hiển thị BottomBar dựa vào route hiện tại
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -59,7 +62,10 @@ fun TaskApp() {
     val showBottomBar = currentRoute != "onboarding" 
                      && currentRoute != "detail_screen/{taskId}"
     
+    // Sử dụng WindowInsets để loại bỏ hoặc giảm insets hệ thống
     Scaffold(
+        // Giảm hoặc loại bỏ insets để TopBar sát với phần trên màn hình
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (showBottomBar) {
                 BottomBar(navController = navController)
@@ -86,8 +92,20 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "app_screen_one"
+        startDestination = "onboarding"
     ) {
+        // Màn hình Onboarding
+        composable("onboarding") {
+            OnboardingScreen(
+                onFinish = {
+                    navController.navigate("app_screen_one") {
+                        popUpTo("onboarding") { inclusive = true }
+                    }
+                }
+            )
+        }
+        
+        // Màn hình chính hiển thị danh sách tasks (Home)
         composable("app_screen_one") {
             AppScreenOne(
                 navController = navController,
@@ -98,6 +116,7 @@ fun AppNavHost(
             )
         }
         
+        // Màn hình chi tiết task
         composable(
             route = "detail_screen/{taskId}",
             arguments = listOf(navArgument("taskId") { type = NavType.IntType })
@@ -109,7 +128,6 @@ fun AppNavHost(
                 taskViewModel = taskViewModel
             )
         }
-        
         composable("add_new_task") {
             AddNewTaskScreen(
                 navController = navController,
@@ -119,29 +137,31 @@ fun AppNavHost(
         
         // Các màn hình khác (tạm thời hiển thị placeholders)
         composable("calendar_screen") {
-            PlaceholderScreen(stringResource(R.string.calendar))
+            PlaceholderScreen("Calendar Screen")
         }
         
         composable("notes_screen") {
-            PlaceholderScreen(stringResource(R.string.notes))
+            PlaceholderScreen("Notes Screen")
         }
         
         composable("settings_screen") {
-            PlaceholderScreen(stringResource(R.string.settings))
+            PlaceholderScreen("Settings Screen")
         }
+
     }
 }
 
+// Màn hình placeholder tạm thời cho các tab chưa phát triển
 @Composable
 fun PlaceholderScreen(title: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        contentAlignment = androidx.compose.ui.Alignment.Center
+        contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "$title\n${stringResource(R.string.coming_soon)}",
+            text = "$title\nComing Soon!",
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center
         )
